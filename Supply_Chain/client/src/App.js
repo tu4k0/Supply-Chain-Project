@@ -6,7 +6,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = { loaded:false, cost:0, itemID: "item1"};
+  state = { loaded:false, cost:0, itemId: "item1"};
 
   componentDidMount = async () => {
     try {
@@ -19,14 +19,14 @@ class App extends Component {
       // Get the contract instance.
       this.networkId = await this.web3.eth.net.getId();
       
-      this.itemManager = new web3.eth.Contract(
+      this.itemManager = new this.web3.eth.Contract(
         ItemManagerContract.abi,
-        ItemManagerContract.networks[networkId] && ItemManagerContract.networks[networkId].address,
+        ItemManagerContract.networks[this.networkId] && ItemManagerContract.networks[this.networkId].address,
       );
 
-      this.item = new web3.eth.Contract(
+      this.item = new this.web3.eth.Contract(
         ItemContract.abi,
-        ItemContract.networks[networkId] && ItemContract.networks[networkId].address,
+        ItemContract.networks[this.networkId] && ItemContract.networks[this.networkId].address,
       );  
 
       // Set web3, accounts, and contract to the state, and then proceed with an
@@ -43,7 +43,7 @@ class App extends Component {
 
   handleInputChange = (event) => {
     const target = event.target;
-    const value = target.type == "checkbox" ? target.checked : target.value;
+    const value = target.type === "checkbox" ? target.checked : target.value;
     const name = target.name;
     this.setState({
       [name]: value
@@ -52,7 +52,10 @@ class App extends Component {
 
   handleSubmit = async() => {
     const {cost, itemId} = this.state;
-    await this.itemManager.methods.createItem(itemId, cost).send({from: this.accounts[0]});
+    console.log(cost,itemId,this.itemManager);
+    let result = await this.itemManager.methods.createItem(itemId, cost).send({from: this.accounts[0]});
+    console.log(result);
+    alert("Send" + cost +" Wei to" + result.events.SupplyChainStep.returnValues._itemAddress);
   }
 
   render() {
@@ -64,8 +67,8 @@ class App extends Component {
         <h1>Supply Chain Project</h1>
         <h2>Предметы</h2>
         <h2>Добавить предмет</h2>
-        Стоимость в Wei: <input type="text" name="cost" value={this.state.cost} onChange={} />
-        ID предмета: <input type="text" name="itemId" value={this.state.itemId} onChange={} />
+        Стоимость в Wei: <input type="text" name="cost" value={this.state.cost} onChange={this.handleInputChange} />
+        ID предмета: <input type="text" name="itemId" value={this.state.itemId} onChange={this.handleInputChange} />
         <button type="button" onClick={this.handleSubmit}>Создать новый предмет</button>
       </div>
     );
@@ -73,4 +76,3 @@ class App extends Component {
 }
 
 export default App;
-
