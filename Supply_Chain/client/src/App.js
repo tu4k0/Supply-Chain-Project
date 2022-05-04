@@ -44,11 +44,14 @@ class App extends Component {
 
   listenToPaymentEvent = () => {
     let self = this;
-    this.itemManager.events.SupplyChainStep().on("data", async function(evt){
+    this.itemManager.events.SupplyChainStatus().on("data", async function(evt){
+      if(evt.returnValues._step == 1) {
+        let itemObj = await self.itemManager.methods.items(evt.returnValues._itemIndex).call();
+        console.log(itemObj);
+        alert("Item " + itemObj._identifier + " was paid. Deliver it now");
+      };
       console.log(evt);
-      let itemObj = await self.itemManager.methods.items(evt.returnValues._itemIndex).call();
-      alert("Item " + itemObj._identifier + " was paid. Deliver it now");
-    })
+    });
   }
 
   handleInputChange = (event) => {
@@ -65,7 +68,7 @@ class App extends Component {
     console.log(cost,itemId,this.itemManager);
     let result = await this.itemManager.methods.createItem(itemId, cost).send({from: this.accounts[0]});
     console.log(result);
-    alert("Send" + cost +" Wei to" + result.events.SupplyChainStep.returnValues._itemAddress);
+    alert("Send" +cost+" Wei to" +result.events.SupplyChainStatus.returnValues._itemAddress);
   }
 
   render() {
